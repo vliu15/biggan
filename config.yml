@@ -1,0 +1,70 @@
+base_channels: &base_channels 96
+
+## stl10 params ##
+n_classes: &n_classes 10
+target: &target modules.dataset.STL10
+crop_size: &crop_size [64, 64]
+bottom_width: &bottom_width 2
+
+## imagenet params ##
+# n_classes: &n_classes 1000
+# target: &target modules.dataset.ImageNet
+# crop_size: &crop_size [256, 256]
+# bottom_width: &bottom_width 8
+
+## train data ##
+train_dataset:
+    _target_: *target
+    root: data
+    split: train
+    download: true
+    crop_size: *crop_size
+train_dataloader:
+    batch_size: 4
+    drop_last: true
+    shuffle: true
+    pin_memory: true
+
+## val data ##
+val_dataset:
+    _target_: *target
+    root: data
+    split: test
+    download: true
+    crop_size: *crop_size
+val_dataloader:
+    batch_size: 64
+    drop_last: false
+    shuffle: false
+    pin_memory: true
+
+## generator ##
+generator:
+    _target_: modules.networks.Generator
+    base_channels: *base_channels
+    bottom_width: *bottom_width
+    z_dim: 120
+    shared_dim: 128
+    n_classes: *n_classes
+g_optim:
+    lr: 0.0001
+    betas: [0.0, 0.999]
+    eps: 0.000001
+
+## discriminator ##
+discriminator:
+    _target_: modules.networks.Discriminator
+    base_channels: *base_channels
+    n_classes: *n_classes
+d_optim:
+    lr: 0.0004
+    betas: [0.0, 0.999]
+    eps: 0.000001
+
+## training params ##
+train:
+    epochs: 400
+    save_every: 5
+    log_dir: logs
+
+resume_checkpoint: null
