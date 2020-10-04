@@ -59,6 +59,8 @@ def train(dataloaders, models, optimizers, train_config, device, start_epoch=0):
         epoch_steps = 0
         mean_g_loss = 0.0
         mean_d_loss = 0.0
+        generator.train()
+        discriminator.train()
         pbar = tqdm(train_dataloader, position=0, desc='train [G loss: -.-----][D loss: -.-----]')
         for (x, y) in pbar:
             x = x.to(device)
@@ -95,7 +97,9 @@ def train(dataloaders, models, optimizers, train_config, device, start_epoch=0):
         epoch_steps = 0
         mean_g_loss = 0.0
         mean_d_loss = 0.0
-        pbar = tqdm(train_dataloader, position=0, desc='val [G loss: -.-----][D loss: -.-----]')
+        generator.eval()
+        discriminator.eval()
+        pbar = tqdm(val_dataloader, position=0, desc='val [G loss: -.-----][D loss: -.-----]')
         for (x, y) in pbar:
             x = x.to(device)
             y = y.to(device)
@@ -119,8 +123,8 @@ def main():
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    generator = instantiate(config.generator).to(device).apply(weights_init).train()
-    discriminator = instantiate(config.discriminator).to(device).apply(weights_init).train()
+    generator = instantiate(config.generator).to(device).apply(weights_init)
+    discriminator = instantiate(config.discriminator).to(device).apply(weights_init)
 
     g_optimizer = torch.optim.Adam(generator.parameters(), **config.g_optim)
     d_optimizer = torch.optim.Adam(discriminator.parameters(), **config.d_optim)

@@ -24,6 +24,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 def sample_z(z_dim, batch_size, device):
     ''' Samples random noise z '''
     return torch.randn((batch_size, z_dim), device=device)
