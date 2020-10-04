@@ -7,7 +7,7 @@ Unofficial Pytorch implementation of BigGAN, proposed in [Large Scale GAN Traini
 3. All defaults can be found in `config.yml` and are as per the configurations described in the original paper and code.
 
 ### Training
-By default, all checkpoints will be stored in `logs/YYYY-MM-DD_hh_mm_ss`, but this can be edited via the `train_sr*.log_dir` field in the config file. If resuming from checkpoint, populate the `resume_checkpoint` field.
+By default, all checkpoints will be stored in `logs/YYYY-MM-DD_hh_mm_ss`, but this can be edited via the `train.log_dir` field in the config file. If resuming from checkpoint, populate the `resume_checkpoint` field.
 
 1. Run `python train.py` to train BigGAN.
 
