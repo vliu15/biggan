@@ -9,8 +9,8 @@ bottom_width: &bottom_width 2
 ## imagenet params ##
 # n_classes: &n_classes 1000
 # target: &target modules.dataset.ImageNet
-# crop_size: &crop_size [256, 256]
-# bottom_width: &bottom_width 8
+# crop_size: &crop_size [128, 128]
+# bottom_width: &bottom_width 4
 
 ## train data ##
 train_dataset:

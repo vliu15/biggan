@@ -47,7 +47,7 @@ class STL10(torchvision.datasets.STL10):
 
         self.transforms = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.RandomCrop(crop_size),
+            transforms.Resize(crop_size),
             transforms.RandomHorizontalFlip(),
             transforms.Lambda(lambda img: np.array(img)),
             transforms.ToTensor(),
@@ -72,7 +72,7 @@ class ImageNet(torchvision.datasets.ImageNet):
         super().__init__(*args, **kwargs)
 
         self.transforms = transforms.Compose([
-            transforms.RandomCrop(crop_size),
+            transforms.Resize(crop_size),
             transforms.RandomHorizontalFlip(),
             transforms.Lambda(lambda img: np.array(img)),
             transforms.ToTensor(),

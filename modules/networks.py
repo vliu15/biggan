@@ -34,7 +34,7 @@ class ClassConditionalBatchNorm2d(nn.Module):
         out_channels: int,
     ):
         super().__init__()
-        self.bn = torch.nn.BatchNorm2d(out_channels)
+        self.bn = torch.nn.BatchNorm2d(out_channels, affine=False)
         self.class_scale_transform = nn.utils.spectral_norm(nn.Linear(in_channels, out_channels, bias=False))
         self.class_shift_transform = nn.utils.spectral_norm(nn.Linear(in_channels, out_channels, bias=False))
 
@@ -207,26 +207,12 @@ class Generator(nn.Module):
  
         # can't use one big nn.Sequential since we are adding class+noise at each block
         self.g_blocks = nn.ModuleList([
-            nn.ModuleList([
-                GResidualBlock(shared_dim + self.z_chunk_size, 16 * base_channels, 16 * base_channels),
-                AttentionBlock(16 * base_channels),
-            ]),
-            nn.ModuleList([
-                GResidualBlock(shared_dim + self.z_chunk_size, 16 * base_channels, 8 * base_channels),
-                AttentionBlock(8 * base_channels),
-            ]),
-            nn.ModuleList([
-                GResidualBlock(shared_dim + self.z_chunk_size, 8 * base_channels, 4 * base_channels),
-                AttentionBlock(4 * base_channels),
-            ]),
-            nn.ModuleList([
-                GResidualBlock(shared_dim + self.z_chunk_size, 4 * base_channels, 2 * base_channels),
-                AttentionBlock(2 * base_channels),
-            ]),
-            nn.ModuleList([
-                GResidualBlock(shared_dim + self.z_chunk_size, 2 * base_channels, base_channels),
-                AttentionBlock(base_channels),
-            ]),
+            GResidualBlock(shared_dim + self.z_chunk_size, 16 * base_channels, 16 * base_channels),
+            GResidualBlock(shared_dim + self.z_chunk_size, 16 * base_channels, 8 * base_channels),
+            GResidualBlock(shared_dim + self.z_chunk_size, 8 * base_channels, 4 * base_channels),
+            GResidualBlock(shared_dim + self.z_chunk_size, 4 * base_channels, 2 * base_channels),
+            AttentionBlock(2 * base_channels),
+            GResidualBlock(shared_dim + self.z_chunk_size, 2 * base_channels, base_channels),
         ])
         self.proj_o = nn.Sequential(
             nn.BatchNorm2d(base_channels),
@@ -252,9 +238,13 @@ class Generator(nn.Module):
         h = h.view(h.size(0), -1, self.bottom_width, self.bottom_width)
  
         # feed through generator blocks
-        for idx, g_block in enumerate(self.g_blocks):
-            h = g_block[0](h, ys[idx])
-            h = g_block[1](h)
+        idx = 0
+        for g_block in self.g_blocks:
+            if isinstance(g_block, AttentionBlock):
+                h = g_block(h)
+            else:
+                h = g_block(h, ys[idx])
+                idx += 1
  
         # project to 3 RGB channels with tanh to map values to [-1, 1]
         h = self.proj_o(h)
@@ -278,22 +268,11 @@ class Discriminator(nn.Module):
         self.d_blocks = nn.Sequential(
             DResidualBlock(3, base_channels, downsample=True, use_preactivation=False),
             AttentionBlock(base_channels),
-
             DResidualBlock(base_channels, 2 * base_channels, downsample=True, use_preactivation=True),
-            AttentionBlock(2 * base_channels),
-
             DResidualBlock(2 * base_channels, 4 * base_channels, downsample=True, use_preactivation=True),
-            AttentionBlock(4 * base_channels),
-
             DResidualBlock(4 * base_channels, 8 * base_channels, downsample=True, use_preactivation=True),
-            AttentionBlock(8 * base_channels),
-
             DResidualBlock(8 * base_channels, 16 * base_channels, downsample=True, use_preactivation=True),
-            AttentionBlock(16 * base_channels),
-
             DResidualBlock(16 * base_channels, 16 * base_channels, downsample=False, use_preactivation=True),
-            AttentionBlock(16 * base_channels),
-
             nn.ReLU(inplace=True),
         )
         self.proj_o = nn.utils.spectral_norm(nn.Linear(16 * base_channels, 1))
