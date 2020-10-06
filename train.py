@@ -86,10 +86,10 @@ def train(dataloaders, models, optimizers, train_config, device, start_epoch=0):
         if epoch+1 % train_config.save_every == 0:
             print(f'Epoch {epoch}: saving checkpoint')
             torch.save({
-                'g_state_dict': generator.state_dict(),
-                'd_state_dict': discriminator.state_dict(),
-                'g_optimizer': g_optimizer.state_dict(),
-                'd_optimizer': d_optimizer.state_dict(),
+                'g_model_dict': generator.state_dict(),
+                'd_model_dict': discriminator.state_dict(),
+                'g_optim_dict': g_optimizer.state_dict(),
+                'd_optim_dict': d_optimizer.state_dict(),
                 'epoch': epoch,
             }, os.path.join(log_dir, f'epoch={epoch}.pt'))
 
