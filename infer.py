@@ -48,7 +48,7 @@ def main():
     labels = [int(l) for l in args.labels.split(',')]
 
     generator = instantiate(config.generator)
-    generator.load_statei_dict(torch.load(config.resume_checkpoint)['g_state_dict'])
+    generator.load_state_dict(torch.load(config.resume_checkpoint)['g_model_dict'])
 
     for y in range(labels):
         y = torch.tensor((y), device=device)
